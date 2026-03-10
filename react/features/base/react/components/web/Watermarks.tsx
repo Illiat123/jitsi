@@ -254,7 +254,7 @@ function _mapStateToProps(state: IReduxState, ownProps: any) {
         _logoUrl = ownProps.defaultJitsiLogoURL || defaultLogoUrl;
         _logoLink = JITSI_WATERMARK_LINK;
     }
-
+    _showJitsiWatermark = false;
     return {
         _logoLink,
         _logoUrl,

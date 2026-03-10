@@ -30,7 +30,7 @@ var config = {
 
     hosts: {
         // XMPP domain.
-        domain: 'jitsi-meet.example.com',
+        domain: 'jitsi26.realyzer.net',
 
         // When using authentication, domain for guest users.
         // anonymousdomain: 'guest.example.com',
@@ -42,14 +42,14 @@ var config = {
         // focus: 'focus.jitsi-meet.example.com',
 
         // XMPP MUC domain. FIXME: use XEP-0030 to discover it.
-        muc: 'conference.' + subdomain + 'jitsi-meet.example.com',
+        muc: 'conference.' + subdomain + 'jitsi26.realyzer.net',
     },
 
     // BOSH URL. FIXME: use XEP-0156 to discover it.
-    bosh: 'https://jitsi-meet.example.com/' + subdir + 'http-bind',
+    bosh: 'https://jitsi26.realyzer.net/' + subdir + 'http-bind',
 
     // Websocket URL (XMPP)
-    websocket: 'wss://jitsi-meet.example.com/' + subdir + 'xmpp-websocket',
+    websocket: 'wss://jitsi26.realyzer.net/' + subdir + 'xmpp-websocket',
 
     // websocketKeepAliveUrl: 'https://jitsi-meet.example.com/' + subdir + '_unlock',
 
@@ -1496,7 +1496,7 @@ var config = {
     // },
 
     // When true, virtual background feature will be disabled.
-    // disableVirtualBackground: false,
+     disableVirtualBackground: true,
 
     // When true the user cannot add more images to be used as virtual background.
     // Only the default ones from will be available.

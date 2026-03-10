@@ -10,8 +10,8 @@ export const _CONFIG_STORE_PREFIX = 'config.js';
 /**
  * The toolbar buttons to show on premeeting screens.
  */
-export const PREMEETING_BUTTONS = [ 'microphone', 'camera', 'select-background', 'invite', 'settings' ];
-
+//export const PREMEETING_BUTTONS = [ 'microphone', 'camera', 'select-background', 'invite', 'settings' ];
+export const PREMEETING_BUTTONS = [ 'microphone', 'camera'];  
 /**
   * The toolbar buttons to show on 3rdParty prejoin screen.
   */

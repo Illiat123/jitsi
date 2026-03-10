@@ -158,7 +158,7 @@ The project uses WebDriver (WebdriverIO) for end-to-end testing. Test files are 
 - Certificate errors in development are expected (self-signed certificates)
 
 ### Development Workflow
-- Development server proxies to configurable target (default: https://alpha.jitsi.net)
+- Development server proxies to configurable target (default: https://)
 - Hot module replacement enabled for development
 - Bundle analysis available via `ANALYZE_BUNDLE=true` environment variable
 - Circular dependency detection via `DETECT_CIRCULAR_DEPS=true`
