@@ -222,7 +222,7 @@ class ChatInput extends Component<IProps, IState> {
                         type = 'file' />
                     <Button
                         accessibilityLabel = { this.props.t('fileSharing.uploadFile') }
-                        disabled = { !this.props._isFileUploadEnabled }
+                        disabled = { this.props._isFileUploadEnabled === false }
                         icon = { IconCloudUpload }
                         onClick = { this._onAttachClick }
                         size = { isMobileBrowser() ? 'large' : 'medium' } />

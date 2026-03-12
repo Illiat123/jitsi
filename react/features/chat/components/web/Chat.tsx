@@ -284,7 +284,7 @@ const Chat = ({
     const resizeEnabled = shouldEnableResize();
     const { classes, cx } = useStyles({ _isResizing, width: _width, isTouch, resizeEnabled });
     const store = useStore<IStore>();
-    const isFileUploadEnabled = useSelector(isFileUploadingEnabled);
+    const isBackendFileUploadEnabled = useSelector(isFileUploadingEnabled);
     const isFileSharingFeatureEnabled = useSelector(isFileSharingEnabled);
     const [ isMouseDown, setIsMouseDown ] = useState(false);
     const [ mousePosition, setMousePosition ] = useState<number | null>(null);
@@ -476,7 +476,7 @@ const Chat = ({
         }
 
         // Prefer full file-sharing pipeline when available.
-        if (isFileSharingFeatureEnabled && isFileUploadEnabled) {
+        if (isFileSharingFeatureEnabled && isBackendFileUploadEnabled) {
             processFiles(files, store);
 
             return;
@@ -514,7 +514,7 @@ const Chat = ({
 
             reader.readAsDataURL(file);
         });
-    }, [ dispatch, isFileSharingFeatureEnabled, isFileUploadEnabled, store ]);
+    }, [ dispatch, isFileSharingFeatureEnabled, isBackendFileUploadEnabled, store ]);
 
     function renderChat() {
         return (
@@ -524,7 +524,7 @@ const Chat = ({
                     <MessageContainer
                         messages = { _messages } />
                     <ChatInput
-                        _isFileUploadEnabled = { isFileUploadEnabled }
+                        _isFileUploadEnabled = { true }
                         onAttachFiles = { onAttachFiles }
                         onSend = { onSendMessage } />
                 </div>) }
