@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { makeStyles } from 'tss-react/mui';
 
 import { IReduxState } from '../../../app/types';
+import { leaveConference } from '../../../base/conference/actions.any';
 import { isMobileBrowser } from '../../../base/environment/utils';
 import { getLocalParticipant, isLocalParticipantModerator } from '../../../base/participants/functions';
 import ContextMenu from '../../../base/ui/components/web/ContextMenu';
@@ -12,7 +13,6 @@ import { isCCTabEnabled } from '../../../subtitles/functions.any';
 import { isTranscribing } from '../../../transcribing/functions';
 import {
     setHangupMenuVisible,
-    setOverflowMenuVisible,
     setToolbarHovered,
     setToolboxVisible
 } from '../../actions.web';
@@ -30,7 +30,6 @@ import HangupButton from '../HangupButton';
 import { EndConferenceButton } from './EndConferenceButton';
 import HangupMenuButton from './HangupMenuButton';
 import { LeaveConferenceButton } from './LeaveConferenceButton';
-import OverflowMenuButton from './OverflowMenuButton';
 import Separator from './Separator';
 
 /**
@@ -60,6 +59,59 @@ const useStyles = makeStyles()(() => {
             margin: 0,
             padding: '16px',
             marginBottom: '8px'
+        },
+
+        consultationRoot: {
+            position: 'fixed',
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 260,
+            display: 'flex',
+            justifyContent: 'center',
+            padding: '12px 16px',
+            pointerEvents: 'none'
+        },
+
+        consultationBar: {
+            width: '100%',
+            maxWidth: '1200px',
+            background: 'rgba(0, 0, 0, 0.55)',
+            borderRadius: '8px',
+            padding: '10px 12px',
+            display: 'grid',
+            gridTemplateColumns: '1fr auto 1fr',
+            alignItems: 'center',
+            columnGap: '12px',
+            pointerEvents: 'auto'
+        },
+
+        consultationGroup: {
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+        },
+
+        consultationCenter: {
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            justifyContent: 'center'
+        },
+
+        consultationHangup: {
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            height: 36,
+            padding: '0 16px',
+            borderRadius: '6px',
+            border: 'none',
+            cursor: 'pointer',
+            backgroundColor: '#d32f2f',
+            color: '#fff',
+            fontWeight: 600,
+            fontSize: '13px'
         }
     };
 });
@@ -88,7 +140,6 @@ export default function Toolbox({
     const iAmSipGateway = useSelector((state: IReduxState) => state['features/base/config'].iAmSipGateway);
     const overflowDrawer = useSelector((state: IReduxState) => state['features/toolbox'].overflowDrawer);
     const shiftUp = useSelector((state: IReduxState) => state['features/toolbox'].shiftUp);
-    const overflowMenuVisible = useSelector((state: IReduxState) => state['features/toolbox'].overflowMenuVisible);
     const hangupMenuVisible = useSelector((state: IReduxState) => state['features/toolbox'].hangupMenuVisible);
     const buttonsWithNotifyClick
         = useSelector((state: IReduxState) => state['features/toolbox'].buttonsWithNotifyClick);
@@ -112,6 +163,8 @@ export default function Toolbox({
         = useSelector((state: IReduxState) => state['features/toolbox'].mainToolbarButtonsThresholds);
     const { reducedUImainToolbarButtons } = useSelector((state: IReduxState) => state['features/base/config']);
     const reducedUI = useSelector((state: IReduxState) => state['features/base/responsive-ui'].reducedUI);
+    const alwaysVisible = useSelector((state: IReduxState) =>
+        state['features/base/config'].toolbarConfig?.alwaysVisible);
     const allButtons = useToolboxButtons(customToolbarButtons);
     const isMobile = isMobileBrowser();
     const endConferenceSupported = Boolean(conference?.isEndConferenceSupported() && isModerator);
@@ -127,6 +180,14 @@ export default function Toolbox({
         }
     }, [ toolbarVisible ]);
 
+    // Ensure toolbox stays visible when alwaysVisible is configured.
+    // This useEffect handles both initial mount and when alwaysVisible changes.
+    useEffect(() => {
+        if (alwaysVisible && !toolbarVisible) {
+            dispatch(setToolboxVisible(true));
+        }
+    }, [ toolbarVisible, alwaysVisible, dispatch ]);
+
     /**
      * Sets the visibility of the hangup menu.
      *
@@ -137,19 +198,6 @@ export default function Toolbox({
      */
     const onSetHangupVisible = useCallback((visible: boolean) => {
         dispatch(setHangupMenuVisible(visible));
-        dispatch(setToolbarHovered(visible));
-    }, [ dispatch ]);
-
-    /**
-     * Sets the visibility of the overflow menu.
-     *
-     * @param {boolean} visible - Whether or not the overflow menu should be
-     * displayed.
-     * @private
-     * @returns {void}
-     */
-    const onSetOverflowVisible = useCallback((visible: boolean) => {
-        dispatch(setOverflowMenuVisible(visible));
         dispatch(setToolbarHovered(visible));
     }, [ dispatch ]);
 
@@ -165,13 +213,6 @@ export default function Toolbox({
         }
     }, [ dispatch, hangupMenuVisible, toolbarVisible, onSetHangupVisible ]);
 
-    useEffect(() => {
-        if (overflowMenuVisible && isDialogVisible) {
-            onSetOverflowVisible(false);
-            dispatch(setToolbarHovered(false));
-        }
-    }, [ dispatch, overflowMenuVisible, isDialogVisible, onSetOverflowVisible ]);
-
     /**
      * Key handler for overflow/hangup menus.
      *
@@ -182,9 +223,8 @@ export default function Toolbox({
         if (e?.key === 'Escape') {
             e?.stopPropagation();
             hangupMenuVisible && dispatch(setHangupMenuVisible(false));
-            overflowMenuVisible && dispatch(setOverflowMenuVisible(false));
         }
-    }, [ dispatch, hangupMenuVisible, overflowMenuVisible ]);
+    }, [ dispatch, hangupMenuVisible ]);
 
     /**
      * Dispatches an action signaling the toolbar is not being hovered.
@@ -193,8 +233,8 @@ export default function Toolbox({
      * @returns {void}
      */
     const onMouseOut = useCallback(() => {
-        !overflowMenuVisible && dispatch(setToolbarHovered(false));
-    }, [ dispatch, overflowMenuVisible ]);
+        dispatch(setToolbarHovered(false));
+    }, [ dispatch ]);
 
     /**
      * Dispatches an action signaling the toolbar is being hovered.
@@ -221,13 +261,14 @@ export default function Toolbox({
      * @returns {void}
      */
     const handleBlur = useCallback(() => {
-        dispatch(setToolboxVisible(false));
-    }, [ dispatch ]);
+        if (!alwaysVisible) {
+            dispatch(setToolboxVisible(false));
+        }
+    }, [ dispatch, alwaysVisible ]);
 
     if (iAmRecorder || iAmSipGateway) {
         return null;
     }
-
 
     const rootClassNames = `new-toolbox ${toolbarVisible ? 'visible' : ''} ${
         toolbarButtonsToUse.length ? '' : 'no-buttons'}`;
@@ -254,15 +295,6 @@ export default function Toolbox({
     const mainMenuButtons = reducedUI
         ? reducedUIButtons.mainMenuButtons
         : normalUIButtons.mainMenuButtons;
-    const overflowMenuButtons = reducedUI
-        ? []
-        : normalUIButtons.overflowMenuButtons;
-    const raiseHandInOverflowMenu = overflowMenuButtons.some(({ key }) => key === 'raisehand');
-    const showReactionsInOverflowMenu = _shouldDisplayReactionsButtons
-        && (
-            (!reactionsButtonEnabled && (raiseHandInOverflowMenu || isNarrowLayout || isMobile))
-            || overflowMenuButtons.some(({ key }) => key === 'reactions'));
-    const showRaiseHandInReactionsMenu = showReactionsInOverflowMenu && raiseHandInOverflowMenu;
 
     return (
         <div
@@ -282,46 +314,12 @@ export default function Toolbox({
                     <div
                         className = 'toolbox-content-items'
                         ref = { _toolboxRef }>
-                        {mainMenuButtons.map(({ Content, key, ...rest }) => Content !== Separator && (
-                            <Content
-                                { ...rest }
-                                buttonKey = { key }
-                                key = { key } />))}
-
-                        {Boolean(overflowMenuButtons.length) && (
-                            <OverflowMenuButton
-                                ariaControls = 'overflow-menu'
-                                buttons = { overflowMenuButtons.reduce<Array<IToolboxButton[]>>((acc, val) => {
-                                    if (val.key === 'reactions' && showReactionsInOverflowMenu) {
-                                        return acc;
-                                    }
-
-                                    if (val.key === 'raisehand' && showRaiseHandInReactionsMenu) {
-                                        return acc;
-                                    }
-
-                                    if (acc.length) {
-                                        const prev = acc[acc.length - 1];
-                                        const group = prev[prev.length - 1].group;
-
-                                        if (group === val.group) {
-                                            prev.push(val);
-                                        } else {
-                                            acc.push([ val ]);
-                                        }
-                                    } else {
-                                        acc.push([ val ]);
-                                    }
-
-                                    return acc;
-                                }, []) }
-                                isOpen = { overflowMenuVisible }
-                                key = 'overflow-menu'
-                                onToolboxEscKey = { onEscKey }
-                                onVisibilityChange = { onSetOverflowVisible }
-                                showRaiseHandInReactionsMenu = { showRaiseHandInReactionsMenu }
-                                showReactionsMenu = { showReactionsInOverflowMenu } />
-                        )}
+                        {mainMenuButtons.map(({ Content, key, ...rest }) => 
+                            Content !== Separator && (key === 'microphone' || key === 'camera' || key === 'chat') && (
+                                <Content
+                                    { ...rest }
+                                    buttonKey = { key }
+                                    key = { key } />))}
 
                         {isButtonEnabled('hangup', toolbarButtonsToUse) && (
                             endConferenceSupported
@@ -335,7 +333,6 @@ export default function Toolbox({
                                         accessibilityLabel = { t(toolbarAccLabel) }
                                         className = { classes.hangupMenu }
                                         hidden = { false }
-                                        inDrawer = { overflowDrawer }
                                         onKeyDown = { onEscKey }>
                                         <EndConferenceButton
                                             buttonKey = 'end-meeting'

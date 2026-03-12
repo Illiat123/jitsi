@@ -122,12 +122,12 @@ const useStyles = makeStyles<{
 }>()((theme, { _isResizing, isTouch, resizeEnabled, width }) => {
     return {
         container: {
-            backgroundColor: theme.palette.chatBackground,
+            backgroundColor: 'rgba(51, 51, 51, 0.95)',
             flexShrink: 0,
             overflow: 'hidden',
             position: 'relative',
             transition: _isResizing ? undefined : 'width .16s ease-in-out',
-            width: `${width}px`,
+            width: '420px',
             zIndex: 300,
 
             // On non-touch devices (desktop), show handle on hover
@@ -468,63 +468,12 @@ const Chat = ({
     function renderChat() {
         return (
             <>
-                {renderTabs()}
                 {!_isChatDisabled && (<div
-                    aria-labelledby = { ChatTabs.CHAT }
-                    className = { cx(
-                        classes.chatPanel,
-                        !_isPollsEnabled
-                        && !_isCCTabEnabled
-                        && !_isFileSharingTabEnabled
-                        && classes.chatPanelNoTabs,
-                        _focusedTab !== ChatTabs.CHAT && 'hide'
-                    ) }
-                    id = { `${ChatTabs.CHAT}-panel` }
-                    role = 'tabpanel'
-                    tabIndex = { 0 }>
+                    className = { cx(classes.chatPanelNoTabs, classes.resizableChat) }>
                     <MessageContainer
                         messages = { _messages } />
-                    <MessageRecipient />
-                    {isPrivateChatAllowed && (
-                        <Select
-                            containerClassName = { cx(classes.privateMessageRecipientsList) }
-                            id = 'select-chat-recipient'
-                            onChange = { onSelectedRecipientChange }
-                            options = { options }
-                            value = { privateMessageRecipient?.id || OPTION_GROUPCHAT } />
-                    )}
-                    <ChatInput
-                        onSend = { onSendMessage } />
+                    <ChatInput onSend = { onSendMessage } />
                 </div>) }
-                { _isPollsEnabled && (
-                    <>
-                        <div
-                            aria-labelledby = { ChatTabs.POLLS }
-                            className = { cx(classes.pollsPanel, _focusedTab !== ChatTabs.POLLS && 'hide') }
-                            id = { `${ChatTabs.POLLS}-panel` }
-                            role = 'tabpanel'
-                            tabIndex = { 1 }>
-                            <PollsPane />
-                        </div>
-                        <KeyboardAvoider />
-                    </>
-                )}
-                { _isCCTabEnabled && <div
-                    aria-labelledby = { ChatTabs.CLOSED_CAPTIONS }
-                    className = { cx(classes.chatPanel, _focusedTab !== ChatTabs.CLOSED_CAPTIONS && 'hide') }
-                    id = { `${ChatTabs.CLOSED_CAPTIONS}-panel` }
-                    role = 'tabpanel'
-                    tabIndex = { 2 }>
-                    <ClosedCaptionsTab />
-                </div> }
-                { _isFileSharingTabEnabled && <div
-                    aria-labelledby = { ChatTabs.FILE_SHARING }
-                    className = { cx(classes.chatPanel, _focusedTab !== ChatTabs.FILE_SHARING && 'hide') }
-                    id = { `${ChatTabs.FILE_SHARING}-panel` }
-                    role = 'tabpanel'
-                    tabIndex = { 3 }>
-                    <FileSharing />
-                </div> }
             </>
         );
     }
@@ -537,81 +486,7 @@ const Chat = ({
      * @returns {ReactElement}
      */
     function renderTabs() {
-        // The only way focused tab will be undefined is when no tab is enabled. Therefore this function won't be
-        // executed because Chat component won't render anything. This should never happen but adding the check
-        // here to make TS happy (when passing the _focusedTab in the selected prop for Tabs).
-        if (!_focusedTab) {
-            return null;
-        }
-
-        let tabs = [];
-
-        // Only add chat tab if chat is not disabled.
-        if (!_isChatDisabled) {
-            tabs.push({
-                accessibilityLabel: t('chat.tabs.chat'),
-                countBadge:
-                    _focusedTab !== ChatTabs.CHAT && _unreadMessagesCount > 0 ? _unreadMessagesCount : undefined,
-                id: ChatTabs.CHAT,
-                controlsId: `${ChatTabs.CHAT}-panel`,
-                icon: IconMessage,
-                title: t('chat.tabs.chat')
-            });
-        }
-
-        if (_isPollsEnabled) {
-            tabs.push({
-                accessibilityLabel: t('chat.tabs.polls'),
-                countBadge: _focusedTab !== ChatTabs.POLLS && _unreadPollsCount > 0 ? _unreadPollsCount : undefined,
-                id: ChatTabs.POLLS,
-                controlsId: `${ChatTabs.POLLS}-panel`,
-                icon: IconInfo,
-                title: t('chat.tabs.polls')
-            });
-        }
-
-        if (_isCCTabEnabled) {
-            tabs.push({
-                accessibilityLabel: t('chat.tabs.closedCaptions'),
-                countBadge: undefined,
-                id: ChatTabs.CLOSED_CAPTIONS,
-                controlsId: `${ChatTabs.CLOSED_CAPTIONS}-panel`,
-                icon: IconSubtitles,
-                title: t('chat.tabs.closedCaptions')
-            });
-        }
-
-        if (_isFileSharingTabEnabled) {
-            tabs.push({
-                accessibilityLabel: t('chat.tabs.fileSharing'),
-                countBadge: _focusedTab !== ChatTabs.FILE_SHARING && _unreadFilesCount > 0 ? _unreadFilesCount : undefined,
-                id: ChatTabs.FILE_SHARING,
-                controlsId: `${ChatTabs.FILE_SHARING}-panel`,
-                icon: IconShareDoc,
-                title: t('chat.tabs.fileSharing')
-            });
-        }
-
-        if (tabs.length === 1) {
-            tabs = [];
-        }
-
-        return (
-            <Tabs
-                accessibilityLabel = { _isPollsEnabled || _isCCTabEnabled || _isFileSharingTabEnabled
-                    ? t('chat.titleWithFeatures', {
-                        features: [
-                            _isPollsEnabled ? t('chat.titleWithPolls') : '',
-                            _isCCTabEnabled ? t('chat.titleWithCC') : '',
-                            _isFileSharingTabEnabled ? t('chat.titleWithFileSharing') : ''
-                        ].filter(Boolean).join(', ')
-                    })
-                    : t('chat.title')
-                }
-                onChange = { onChangeTab }
-                selected = { _focusedTab }
-                tabs = { tabs } />
-        );
+        return null;
     }
 
     if (_reducedUI) {
@@ -625,25 +500,16 @@ const Chat = ({
             onKeyDown = { onEscClick } >
             <ChatHeader
                 className = { cx('chat-header', classes.chatHeader) }
-                isCCTabEnabled = { _isCCTabEnabled }
-                isPollsEnabled = { _isPollsEnabled }
+                isCCTabEnabled = { false }
+                isPollsEnabled = { false }
                 onCancel = { onToggleChat } />
             {_showNamePrompt
                 ? <DisplayNameForm
-                    isCCTabEnabled = { _isCCTabEnabled }
+                    isCCTabEnabled = { false }
                     isChatDisabled = { _isChatDisabled }
-                    isFileSharingEnabled = { _isFileSharingTabEnabled }
-                    isPollsEnabled = { _isPollsEnabled } />
+                    isFileSharingEnabled = { false }
+                    isPollsEnabled = { false } />
                 : renderChat()}
-            <div
-                className = { cx(
-                    classes.dragHandleContainer,
-                    (isMouseDown || _isResizing) && 'visible',
-                    'dragHandleContainer'
-                ) }
-                onPointerDown = { onDragHandlePointerDown }>
-                <div className = { cx(classes.dragHandle, 'dragHandle') } />
-            </div>
         </div> : null
     );
 };

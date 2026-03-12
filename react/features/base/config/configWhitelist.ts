@@ -80,6 +80,7 @@ export default [
     'channelLastN',
     'connectionIndicators',
     'constraints',
+    'consultationMode',
     'deeplinking.disabled',
     'deeplinking.desktop.enabled',
     'defaultLocalDisplayName',

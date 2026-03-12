@@ -12,11 +12,11 @@ const useStyles = makeStyles()(theme => {
             ...theme.typography.bodyLongRegular,
             color: theme.palette.conferenceSubjectText,
             padding: '2px 16px',
-            backgroundColor: 'rgba(0, 0, 0, 0.6)',
+            backgroundColor: 'transparent',
             maxWidth: '324px',
             boxSizing: 'border-box',
             height: '28px',
-            borderRadius: `${theme.shape.borderRadius}px 0 0 ${theme.shape.borderRadius}px`,
+            borderRadius: '0',
             marginLeft: '2px',
 
             '@media (max-width: 300px)': {

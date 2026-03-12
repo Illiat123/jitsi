@@ -49,6 +49,7 @@ import { IFRAME_DISABLED_TIMEOUT_MINUTES, IFRAME_EMBED_ALLOWED_LOCATIONS } from 
 
 
 let intervalID: any;
+const CONSULTATION_END_NOTIFICATION_ID = 'consultation-end-notification';
 
 
 MiddlewareRegistry.register(store => next => action => {
@@ -72,6 +73,13 @@ MiddlewareRegistry.register(store => next => action => {
     case CONFERENCE_FAILED: {
         clearInterval(intervalID);
         intervalID = null;
+
+        if (action.type === CONFERENCE_LEFT && browser.isReactNative()) {
+            store.dispatch(showNotification({
+                title: 'Vielen Dank für die Teilnahme an dieser Video-Konferenz.',
+                uid: CONSULTATION_END_NOTIFICATION_ID
+            }, NOTIFICATION_TIMEOUT_TYPE.MEDIUM));
+        }
 
         break;
     }

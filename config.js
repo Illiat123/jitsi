@@ -128,19 +128,22 @@ var config = {
     // disableModeratorIndicator: false,
 
     // Disables the reactions feature.
-    // disableReactions: true,
+    disableReactions: true,
 
     // Disables the reactions moderation feature.
     // disableReactionsModeration: false,
 
     // Disables the reactions in chat feature.
-    // disableReactionsInChat: false,
+    disableReactionsInChat: true,
 
     // Disables polls feature.
-    // disablePolls: false,
+    disablePolls: true,
 
     // Disables chat feature entirely including notifications, sounds, and private messages.
     // disableChat: false,
+
+    // Consultation UI: prevent layout modes that don't fit 1:1.
+    disableTileView: true,
 
     // Disables demote button from self-view
     // disableSelfDemote: false,
@@ -438,6 +441,12 @@ var config = {
     //     hideStorageWarning: false,
     // },
 
+    // Consultation mode: disable recording.
+    recordingService: {
+        enabled: false,
+        sharingEnabled: false,
+    },
+
     // DEPRECATED. Use recordingService.enabled instead.
     // fileRecordingsServiceEnabled: false,
 
@@ -456,6 +465,13 @@ var config = {
     //     disableSelfRecording: false,
     // },
 
+    // Consultation mode: disable local recording.
+    localRecording: {
+        disable: true,
+        notifyAllParticipants: false,
+        disableSelfRecording: true,
+    },
+
     // Customize the Live Streaming dialog. Can be modified for a non-YouTube provider.
     // liveStreaming: {
     //    // Whether to enable live streaming or not.
@@ -469,6 +485,11 @@ var config = {
     //    // Documentation reference for the live streaming feature.
     //    helpLink: 'https://jitsi.org/live'
     // },
+
+    // Consultation mode: disable live streaming.
+    liveStreaming: {
+        enabled: false,
+    },
 
     // DEPRECATED. Use liveStreaming.enabled instead.
     // liveStreamingEnabled: false,
@@ -730,6 +751,15 @@ var config = {
     //     showHangUp: true,
     // },
 
+    // Consultation UI: device selection screen before joining.
+    prejoinConfig: {
+        enabled: true,
+        hideDisplayName: true,
+        hideExtraJoinButtons: [ 'no-audio', 'by-phone' ],
+        preCallTestEnabled: false,
+        showHangUp: true,
+    },
+
     // Configs for the security related UI elements.
     // securityUi: {
     //     // Hides the lobby button. Replaces `hideLobbyButton`.
@@ -747,7 +777,7 @@ var config = {
 
     // Enabling the close page will ignore the welcome page redirection when
     // a call is hangup.
-    // enableClosePage: false,
+    enableClosePage: true,
 
     // Disable hiding of remote thumbnails when in a 1-on-1 conference call.
     // Setting this to null, will also disable showing the remote videos
@@ -894,22 +924,33 @@ var config = {
     //    'whiteboard',
     // ],
 
+    // Consultation UI: keep only the essentials.
+    toolbarButtons: [
+        'microphone',
+        'camera',
+        'desktop',
+        'chat',
+        'filesharing',
+        'hangup',
+    ],
+
+
     // Holds values related to toolbar visibility control.
-    // toolbarConfig: {
-    //     // Moved from interfaceConfig.INITIAL_TOOLBAR_TIMEOUT
-    //     // The initial number of milliseconds for the toolbar buttons to be visible on screen.
-    //     initialTimeout: 20000,
-    //     // Moved from interfaceConfig.TOOLBAR_TIMEOUT
-    //     // Number of milliseconds for the toolbar buttons to be visible on screen.
-    //     timeout: 4000,
-    //     // Moved from interfaceConfig.TOOLBAR_ALWAYS_VISIBLE
-    //     // Whether toolbar should be always visible or should hide after x milliseconds.
-    //     alwaysVisible: false,
-    //     // Indicates whether the toolbar should still autohide when chat is open
-    //     autoHideWhileChatIsOpen: false,
-    //     // Default background color for the main toolbar. Accepts any valid CSS color.
-    //     // backgroundColor: '#ffffff',
-    // },
+    toolbarConfig: {
+        // Moved from interfaceConfig.INITIAL_TOOLBAR_TIMEOUT
+        // The initial number of milliseconds for the toolbar buttons to be visible on screen.
+        initialTimeout: 20000,
+        // Moved from interfaceConfig.TOOLBAR_TIMEOUT
+        // Number of milliseconds for the toolbar buttons to be visible on screen.
+        timeout: 4000,
+        // Moved from interfaceConfig.TOOLBAR_ALWAYS_VISIBLE
+        // Whether toolbar should be always visible or should hide after x milliseconds.
+        alwaysVisible: true,
+        // Indicates whether the toolbar should still autohide when chat is open
+        autoHideWhileChatIsOpen: false,
+        // Default background color for the main toolbar. Accepts any valid CSS color.
+        // backgroundColor: '#ffffff',
+    },
 
     // Overrides the buttons displayed in the main toolbar. Depending on the screen size the number of displayed
     // buttons varies from 2 buttons to 8 buttons. Every array in the mainToolbarButtons array will replace the
@@ -1352,11 +1393,11 @@ var config = {
     // Mainly privacy related settings
 
     // Disables all invite functions from the app (share, invite, dial out...etc)
-    // disableInviteFunctions: true,
+    disableInviteFunctions: true,
 
     // Disables storing the room name to the recents list. When in an iframe this is ignored and
     // the room is never stored in the recents list.
-    // doNotStoreRoom: true,
+    doNotStoreRoom: true,
 
     // Deployment specific URLs.
     // deploymentUrls: {
@@ -1496,11 +1537,11 @@ var config = {
     // },
 
     // When true, virtual background feature will be disabled.
-     disableVirtualBackground: true,
+    disableVirtualBackground: true,
 
     // When true the user cannot add more images to be used as virtual background.
     // Only the default ones from will be available.
-    // disableAddingBackgroundImages: false,
+    disableAddingBackgroundImages: true,
 
     // Sets the background transparency level. '0' is fully transparent, '1' is opaque.
     // backgroundAlpha: 1,
@@ -1921,6 +1962,14 @@ var config = {
     //     // Maximum file size limit (-1 value disables any file size limit check)
     //     maxFileSize: 50,
     // },
+
+    // Consultation mode: enable file sharing UI and point to the deployed service.
+    // The backend must enforce TTL/cleanup for DSGVO/GDPR compliance.
+    fileSharing: {
+        apiUrl: '/file-sharing',
+        enabled: true,
+        maxFileSize: 50,
+    },
 };
 
 // Set the default values for JaaS customers

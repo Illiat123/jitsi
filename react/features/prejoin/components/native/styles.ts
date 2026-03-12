@@ -1,6 +1,56 @@
 import BaseTheme from '../../../base/ui/components/BaseTheme.native';
 
 export const preJoinStyles = {
+    consultationWrapper: {
+        flex: 1,
+        backgroundColor: BaseTheme.palette.uiBackground,
+    },
+
+    consultationTopBar: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: BaseTheme.spacing[3],
+        paddingHorizontal: BaseTheme.spacing[4],
+        backgroundColor: BaseTheme.palette.uiBackground,
+    },
+
+    consultationTitle: {
+        ...BaseTheme.typography.heading4,
+        color: BaseTheme.palette.text01,
+        textAlign: 'center',
+    },
+
+    consultationCenter: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingHorizontal: BaseTheme.spacing[4],
+    },
+
+    consultationPreview: {
+        width: '92%',
+        maxWidth: 900,
+        aspectRatio: 16 / 9,
+        borderRadius: BaseTheme.shape.borderRadius,
+        overflow: 'hidden',
+        backgroundColor: BaseTheme.palette.ui01,
+    },
+
+    consultationInstruction: {
+        ...BaseTheme.typography.bodyLongRegular,
+        color: BaseTheme.palette.text03,
+        textAlign: 'center',
+        marginTop: BaseTheme.spacing[4],
+        maxWidth: 700,
+    },
+
+    consultationBottom: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingBottom: BaseTheme.spacing[4],
+        paddingTop: BaseTheme.spacing[2],
+        backgroundColor: BaseTheme.palette.uiBackground,
+    },
 
     joinButton: {
         marginTop: BaseTheme.spacing[3],

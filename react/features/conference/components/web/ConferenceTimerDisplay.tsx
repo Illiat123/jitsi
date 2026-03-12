@@ -9,10 +9,10 @@ const useStyles = makeStyles()(theme => {
             ...theme.typography.labelRegular,
             color: theme.palette.conferenceTimerText,
             padding: '6px 8px',
-            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            backgroundColor: 'transparent',
             boxSizing: 'border-box',
             height: '28px',
-            borderRadius: `0 ${theme.shape.borderRadius}px ${theme.shape.borderRadius}px 0`,
+            borderRadius: '0',
             marginRight: '2px',
 
             '@media (max-width: 300px)': {

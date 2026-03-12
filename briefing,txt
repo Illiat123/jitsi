@@ -1,0 +1,407 @@
+1. Project Overview
+
+This project implements a DSGVO-compliant video consultation system for Sozialverband VdK.
+
+The system is built on top of Jitsi Meet, but the default Jitsi client is modified to support a strict 1:1 consultation workflow.
+
+The goal is to create a simple, secure video consultation platform that mimics an in-person advisory meeting between:
+
+Advisor (Berater)
+
+Client (Mandant)
+
+Important constraint:
+
+The system must only support two participants.
+
+The project modifies the existing Jitsi Meet React client, rather than creating a new one.
+
+2. Development Principle
+DO
+
+Modify the existing Jitsi Meet Web Client.
+
+This includes:
+
+editing React components
+
+removing features
+
+restricting meeting capabilities
+
+customizing UI
+
+integrating token-based access
+
+DO NOT
+
+Build a new WebRTC client
+
+Replace the Jitsi architecture
+
+Implement custom media handling
+
+The Jitsi stack remains unchanged.
+
+3. Existing System Architecture
+Backend Infrastructure
+
+The system runs a standard Jitsi stack.
+
+Components:
+
+Prosody        (XMPP server)
+Jicofo         (conference focus)
+Jitsi Videobridge (media routing)
+
+These services handle:
+
+session signaling
+
+participant management
+
+WebRTC media routing
+
+Frontend
+
+Frontend is a customized build of the Jitsi Meet web client.
+
+Technologies used:
+
+React
+Redux
+Typescript
+WebRTC
+Jitsi Meet External API
+
+The project modifies existing components inside the Jitsi Meet source code.
+
+Typical path:
+
+react/features/
+
+Examples:
+
+react/features/welcome
+react/features/conference
+react/features/toolbox
+react/features/chat
+4. Server Setup
+
+The frontend is hosted separately from the Jitsi backend.
+
+Example server structure:
+
+/var/www/custom-jitsi
+
+Served by:
+
+nginx
+
+Typical stack:
+
+Ubuntu Linux
+nginx
+Jitsi Meet
+Jitsi Videobridge
+Prosody
+Jicofo
+
+Websockets are enabled for videobridge communication.
+
+Example configuration:
+
+/etc/jitsi/videobridge/jvb.conf
+videobridge {
+    websockets {
+        enabled = true
+        tls = true
+    }
+}
+5. Integration With Calendar Systems
+
+The video consultation system integrates with external calendar software.
+
+The calendar system generates secure session URLs using a REST API.
+
+Example workflow:
+
+Calendar system creates a consultation appointment
+
+Backend generates session tokens
+
+Two URLs are created
+
+Example:
+
+https://video.domain/advisor/<token>
+https://video.domain/client/<token>
+
+These URLs are sent to participants via:
+
+email
+
+calendar invitation
+
+Users join directly through their browser.
+
+6. Functional Requirements
+
+The consultation system must support the following features.
+
+Video & Audio
+
+Participants must be able to:
+
+enable / disable camera
+
+enable / disable microphone
+
+communicate using WebRTC
+
+Screen Sharing
+
+Participants can share their screen when needed.
+
+Chat (Consultation Notes)
+
+Participants can exchange text messages.
+
+Chat messages function as consultation notes.
+
+File Exchange
+
+Files can be shared through the chat.
+
+Examples:
+
+PDFs
+
+images
+
+documents
+
+All files must be temporary.
+
+7. Forbidden Features
+
+Several default Jitsi features must be disabled or removed.
+
+The system must NOT support:
+
+meeting recording
+background images
+virtual backgrounds
+more than two participants
+
+The UI must not expose these features.
+
+8. Data Retention Requirements
+
+For privacy reasons, no data may persist after the meeting.
+
+The server must automatically delete:
+
+chat history
+uploaded files
+temporary session data
+
+This is required for GDPR compliance.
+
+9. User Flow
+Step 1 — User Opens Session Link
+
+User opens the consultation link.
+
+Example:
+
+https://video.domain/session/<token>
+Step 2 — Device Selection
+
+User sees a pre-join screen.
+
+User selects:
+
+microphone
+camera
+speaker
+Step 3 — Join Meeting
+
+User clicks:
+
+Join
+
+The user joins the video consultation.
+
+Step 4 — Consultation Interface
+
+The interface contains:
+
+large video of the other participant
+small self preview
+microphone control
+camera control
+leave button
+chat panel
+connection quality indicator
+Step 5 — Session End
+
+When the call ends the user sees an end screen.
+
+Example:
+
+Session ended
+Thank you for using the consultation service
+
+This screen can be customized.
+
+10. Current Development Context
+
+The project already includes several UI modifications.
+
+Examples from the current codebase:
+
+Custom Welcome Page
+
+Example component:
+
+<h1 className='header-text-title'>
+    {t('welcomepage.headerTitle')}
+</h1>
+
+This indicates:
+
+the project uses internationalization (i18n)
+
+UI text is controlled via translation keys
+
+Layout Adjustments
+
+Current work includes:
+
+adjusting video layout
+
+modifying toolbox controls
+
+modifying welcome page UI
+
+rewriting CSS styles
+
+Toolbox Modifications
+
+The Jitsi toolbox is being customized to remove unnecessary features.
+
+Possible remaining controls:
+
+microphone toggle
+camera toggle
+screen share
+chat
+leave meeting
+11. Known UI Issue
+
+Observed problem:
+
+Buttons only appear after moving the mouse.
+
+Possible causes:
+
+CSS hover rules
+opacity transitions
+React state update timing
+
+This likely relates to toolbox visibility logic.
+
+Relevant Jitsi feature:
+
+react/features/toolbox
+12. Development Tasks for AI Agent
+High Priority
+Enforce 2 Participant Limit
+
+Ensure meetings allow only two participants.
+
+Possible implementations:
+
+reject additional joins
+automatically lock room
+disconnect extra participants
+Restrict Jitsi Features
+
+Disable or remove:
+
+recording
+background effects
+extra participants
+livestreaming
+Customize UI Layout
+
+Target layout:
+
++---------------------------+
+|                           |
+|        Remote Video       |
+|                           |
+|                           |
++---------------------------+
+
+ self preview      controls
+Chat With File Sharing
+
+Ensure chat supports:
+
+text messages
+file uploads
+
+But files must be temporary.
+
+End Session Screen
+
+Implement customizable post-call page.
+
+13. Medium Priority Tasks
+Device Selection Screen
+
+Improve pre-join experience.
+
+User selects:
+
+camera
+microphone
+speaker
+
+End abandoned sessions automatically.
+
+14. Key Constraints
+
+The system must remain a simple consultation tool.
+
+Not a general meeting system.
+
+Strict model:
+
+1 advisor
+1 client
+private consultation
+
+15. AI Agent Guidelines
+
+When modifying the codebase:
+
+Always preserve:
+
+Jitsi backend architecture
+WebRTC media pipeline
+React client structure
+
+Prefer:
+
+feature flags
+UI removal
+component overrides
+
+Avoid:
+
+rewriting core Jitsi modules
+custom media handling
+custom signaling systems

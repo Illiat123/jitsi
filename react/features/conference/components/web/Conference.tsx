@@ -45,6 +45,7 @@ import {
 } from '../AbstractConference';
 
 import ConferenceInfo from './ConferenceInfo';
+import ConsultationLayout from './ConsultationLayout';
 import { default as Notice } from './Notice';
 
 /**
@@ -249,7 +250,7 @@ class Conference extends AbstractConference<IProps, any> {
                     ref = { this._setBackground }>
                     <Chat />
                     <div
-                        className = { _layoutClassName }
+                        className = { `${_layoutClassName} consultation-mode` }
                         id = 'videoconference_page'
                         onMouseMove = { isMobileBrowser() ? undefined : this._onShowToolbar }>
                         <ConferenceInfo />
@@ -283,26 +284,24 @@ class Conference extends AbstractConference<IProps, any> {
                 ref = { this._setBackground }>
                 <Chat />
                 <div
-                    className = { _layoutClassName }
+                    className = { `${_layoutClassName} consultation-mode` }
                     id = 'videoconference_page'
                     onMouseMove = { isMobileBrowser() ? undefined : this._onShowToolbar }>
-                    { _showPrejoin || _showLobby || <ConferenceInfo /> }
-                    <Notice />
-                    <div
-                        id = 'videospace'
-                        onTouchStart = { this._onVideospaceTouchStart }>
-                        <LargeVideo />
-                        {
-                            _showPrejoin || _showLobby || (<>
-                                <StageFilmstrip />
-                                <ScreenshareFilmstrip />
-                                <MainFilmstrip />
-                            </>)
-                        }
-                    </div>
-
-                    { _showPrejoin || _showLobby || (
+                    { _showPrejoin || _showLobby || _showVisitorsQueue ? (
                         <>
+                            <Notice />
+                            <div
+                                id = 'videospace'
+                                onTouchStart = { this._onVideospaceTouchStart }>
+                                <LargeVideo />
+                                { !_showPrejoin && (
+                                    <>
+                                        <StageFilmstrip />
+                                        <ScreenshareFilmstrip />
+                                        <MainFilmstrip />
+                                    </>
+                                ) }
+                            </div>
                             <span
                                 aria-level = { 1 }
                                 className = 'sr-only'
@@ -311,7 +310,9 @@ class Conference extends AbstractConference<IProps, any> {
                             </span>
                             <Toolbox />
                         </>
-                    )}
+                    ) : (
+                        <ConsultationLayout />
+                    ) }
 
                     {_notificationsVisible && !_isAnyOverlayVisible && (_overflowDrawer
                         ? <JitsiPortal className = 'notification-portal'>
@@ -485,7 +486,15 @@ export default reactReduxConnect(_mapStateToProps)(translate(props => {
     const [ isDragging, setIsDragging ] = useState(false);
 
     const { isOpen: isChatOpen } = useSelector((state: IReduxState) => state['features/chat']);
+    const isNarrowLayout = useSelector((state: IReduxState) => state['features/base/responsive-ui'].isNarrowLayout);
     const isFileUploadEnabled = useSelector(isFileUploadingEnabled);
+
+    // Automatically show chat on wide screens (consultation layout is always on).
+    React.useEffect(() => {
+        if (!isNarrowLayout && !isChatOpen) {
+            dispatch(openChat());
+        }
+    }, [ isNarrowLayout ]);
 
     const handleDragEnter = useCallback((e: React.DragEvent) => {
         e.preventDefault();

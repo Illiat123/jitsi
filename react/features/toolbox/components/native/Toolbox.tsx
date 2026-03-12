@@ -5,7 +5,10 @@ import { connect, useSelector } from 'react-redux';
 
 import { IReduxState, IStore } from '../../../app/types';
 import ColorSchemeRegistry from '../../../base/color-scheme/ColorSchemeRegistry';
+import { leaveConference } from '../../../base/conference/actions.any';
 import Platform from '../../../base/react/Platform.native';
+import Button from '../../../base/ui/components/native/Button';
+import { BUTTON_TYPES } from '../../../base/ui/constants.native';
 import { iAmVisitor } from '../../../visitors/functions';
 import { customButtonPressed } from '../../actions.native';
 import { getVisibleNativeButtons, isToolboxVisible } from '../../functions.native';
@@ -95,19 +98,31 @@ function Toolbox(props: IProps) {
             return;
         }
 
+        const keep = new Set([ 'microphone', 'camera', 'desktop', 'chat' ]);
+        const filtered = mainMenuButtons.filter(b => keep.has(b.key));
+
+        const renderButton = ({ Content, key, text, ...rest }: IToolboxNativeButton) => (
+            <Content
+                { ...rest }
+                /* eslint-disable react/jsx-no-bind */
+                handleClick = { () => dispatch(customButtonPressed(key, text)) }
+                isToolboxButton = { true }
+                key = { key }
+                styles = { buttonStylesBorderless } />
+        );
+
         return (
             <>
-                {
-                    mainMenuButtons?.map(({ Content, key, text, ...rest }: IToolboxNativeButton) => (
-                        <Content
-                            { ...rest }
-                            /* eslint-disable react/jsx-no-bind */
-                            handleClick = { () => dispatch(customButtonPressed(key, text)) }
-                            isToolboxButton = { true }
-                            key = { key }
-                            styles = { key === 'hangup' ? hangupButtonStyles : buttonStylesBorderless } />
-                    ))
-                }
+                {filtered.filter(b => b.key === 'microphone' || b.key === 'camera').map(renderButton)}
+
+                <Button
+                    accessibilityLabel = 'consultation.leave'
+                    label = 'Verlassen'
+                    onClick = { () => dispatch(leaveConference() as any) }
+                    type = { BUTTON_TYPES.DESTRUCTIVE }
+                    wrapperStyle = {{ marginHorizontal: 8, height: 36, justifyContent: 'center' }} />
+
+                {filtered.filter(b => b.key === 'desktop' || b.key === 'chat').map(renderButton)}
             </>
         );
     };

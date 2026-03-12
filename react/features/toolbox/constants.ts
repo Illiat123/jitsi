@@ -66,23 +66,23 @@ export const THRESHOLDS = [
 export const NATIVE_THRESHOLDS = [
     {
         width: 560,
-        order: [ 'microphone', 'camera', 'chat', 'desktop', 'raisehand', 'tileview', 'overflowmenu', 'hangup' ]
+        order: [ 'microphone', 'camera', 'chat', 'desktop', 'raisehand', 'tileview', 'hangup' ]
     },
     {
         width: 500,
-        order: [ 'microphone', 'camera', 'chat', 'raisehand', 'tileview', 'overflowmenu', 'hangup' ]
+        order: [ 'microphone', 'camera', 'chat', 'raisehand', 'tileview', 'hangup' ]
     },
     {
         width: 440,
-        order: [ 'microphone', 'camera', 'chat', 'raisehand', 'overflowmenu', 'hangup' ]
+        order: [ 'microphone', 'camera', 'chat', 'raisehand', 'hangup' ]
     },
     {
         width: 380,
-        order: [ 'microphone', 'camera', 'chat', 'overflowmenu', 'hangup' ]
+        order: [ 'microphone', 'camera', 'chat', 'hangup' ]
     },
     {
         width: 320,
-        order: [ 'microphone', 'camera', 'overflowmenu', 'hangup' ]
+        order: [ 'microphone', 'camera', 'hangup' ]
     }
 ];
 
@@ -99,7 +99,6 @@ export const MAIN_TOOLBAR_BUTTONS_PRIORITY = [
     'reactions',
     'participants-pane',
     'tileview',
-    'overflowmenu',
     'hangup',
     'invite',
     'toggle-camera',
@@ -197,7 +196,6 @@ export const NATIVE_TOOLBAR_BUTTONS: NativeToolbarButton[] = [
     'chat',
     'hangup',
     'microphone',
-    'overflowmenu',
     'raisehand',
     'desktop',
     'tileview'

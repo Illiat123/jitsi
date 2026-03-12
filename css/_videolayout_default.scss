@@ -5,6 +5,67 @@
     width: 100%;
 }
 
+// Consultation mode (VDK): keep legacy filmstrip DOM alive for VideoLayout,
+// but visually present a 1:1 layout with a small self-view overlay.
+.consultation-mode {
+  // Hide remote thumbnails while keeping the container in the DOM.
+  .remote-videos {
+    display: none !important;
+  }
+
+  // Remove filmstrip chrome; we only want the local preview overlay.
+  .filmstrip {
+    background: transparent !important;
+    pointer-events: none;
+  }
+
+  // Hide stage/screen-share filmstrips in consultation layout; we only want
+  // the main large video + small self view.
+  .stage-filmstrip,
+  .screenshare-filmstrip {
+    display: none !important;
+  }
+
+  // Reposition local thumbnail as a fixed self-preview in the top-left.
+  #filmstripLocalVideo {
+    position: fixed !important;
+    top: 56px !important;
+    left: 16px !important;
+    bottom: auto !important;
+    width: 220px !important;
+    height: 140px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    z-index: 250;
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  }
+
+  #filmstripLocalVideoThumbnail {
+    width: 100% !important;
+    height: 100% !important;
+  }
+
+  // Ensure the thumbnail fills the overlay box.
+  #filmstripLocalVideoThumbnail .videocontainer,
+  #filmstripLocalVideoThumbnail .videocontainer__background,
+  #filmstripLocalVideoThumbnail video {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+  }
+
+  @media (max-width: 600px) {
+    #filmstripLocalVideo {
+      top: 52px !important;
+      left: 12px !important;
+      width: 160px !important;
+      height: 100px !important;
+    }
+  }
+}
+
 #layout_wrapper {
     @include ltr;
     display: flex;

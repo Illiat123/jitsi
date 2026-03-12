@@ -12,9 +12,11 @@ import {
     SET_FULL_SCREEN,
     SET_PARTICIPANT_MENU_BUTTONS_WITH_NOTIFY_CLICK,
     SET_TOOLBAR_BUTTONS,
-    SET_TOOLBOX_TIMEOUT
+    SET_TOOLBOX_TIMEOUT,
+    SET_TOOLBOX_VISIBLE,
+    TOGGLE_TOOLBOX_VISIBLE
 } from './actionTypes';
-import { setMainToolbarThresholds } from './actions.web';
+import { setToolboxVisible, setMainToolbarThresholds } from './actions.web';
 import { THRESHOLDS, TOOLBAR_BUTTONS } from './constants';
 import { getToolbarButtons } from './functions.web';
 import { NOTIFY_CLICK_MODE } from './types';
@@ -65,6 +67,12 @@ MiddlewareRegistry.register(store => next => action => {
                     participantMenuButtonsWithNotifyClick:
                         _buildButtonsArray(participantMenuButtonsWithNotifyClick, customParticipantMenuButtons)
                 });
+                
+                // Ensure the toolbox is immediately visible when configured as alwaysVisible.
+                // Place this inside batch() to ensure it happens synchronously with other config updates.
+                if (state['features/base/config']?.toolbarConfig?.alwaysVisible) {
+                    dispatch(setToolboxVisible(true));
+                }
             });
         }
 
@@ -89,6 +97,36 @@ MiddlewareRegistry.register(store => next => action => {
         action.timeoutID = setTimeout(handler, timeoutMS);
 
         break;
+    }
+
+    case SET_TOOLBOX_VISIBLE: {
+        // Prevent hiding the toolbox when alwaysVisible is configured.
+        // When alwaysVisible is true and we're trying to hide it (visible=false),
+        // just skip the action completely by returning state as-is.
+        const state = store.getState();
+        const alwaysVisible = state['features/base/config']?.toolbarConfig?.alwaysVisible;
+        
+        if (alwaysVisible && !action.visible) {
+            // Don't dispatch the hide action - return current state unchanged
+            return state;
+        }
+        // Allow show actions or non-alwaysVisible scenarios to proceed normally
+        return next(action);
+    }
+
+    case TOGGLE_TOOLBOX_VISIBLE: {
+        // Prevent toggling off when alwaysVisible is configured.
+        const state = store.getState();
+        const alwaysVisible = state['features/base/config']?.toolbarConfig?.alwaysVisible;
+        const currentVisible = state['features/toolbox'].visible;
+        
+        // If alwaysVisible is true and toolbar is currently visible,
+        // block the toggle-off action
+        if (alwaysVisible && currentVisible) {
+            return state;
+        }
+        // Allow the action to proceed normally
+        return next(action);
     }
     }
 

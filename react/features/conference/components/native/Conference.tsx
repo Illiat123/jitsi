@@ -26,6 +26,7 @@ import { isCalendarEnabled } from '../../../calendar-sync/functions.native';
 import DisplayNameLabel from '../../../display-name/components/native/DisplayNameLabel';
 import BrandingImageBackground from '../../../dynamic-branding/components/native/BrandingImageBackground';
 import Filmstrip from '../../../filmstrip/components/native/Filmstrip';
+import LocalThumbnail from '../../../filmstrip/components/native/LocalThumbnail';
 import TileView from '../../../filmstrip/components/native/TileView';
 import { FILMSTRIP_SIZE } from '../../../filmstrip/constants';
 import { isFilmstripVisible } from '../../../filmstrip/functions.native';
@@ -85,7 +86,6 @@ interface IProps extends AbstractProps {
      * rendered.
      */
     _connecting: boolean;
-
     /**
      * Set to {@code true} when the filmstrip is currently visible.
      */
@@ -427,7 +427,20 @@ class Conference extends AbstractConference<IProps, State> {
                     {
                         _shouldDisplayTileView
                         || <>
-                            <Filmstrip />
+                            <View
+                                pointerEvents = 'none'
+                                style = {{
+                                    position: 'absolute',
+                                    top: 70,
+                                    left: 16,
+                                    width: 120,
+                                    height: 120,
+                                    borderRadius: 6,
+                                    overflow: 'hidden',
+                                    zIndex: 2
+                                }}>
+                                <LocalThumbnail />
+                            </View>
                             { this._renderNotificationsContainer() }
                             <Toolbox />
                         </>

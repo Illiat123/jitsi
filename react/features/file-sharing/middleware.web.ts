@@ -35,6 +35,35 @@ import { downloadFile } from './utils';
 StateListenerRegistry.register(
     state => state['features/base/conference'].conference,
     (conference, { dispatch, getState }, previousConference) => {
+        // When leaving a conference, clear local state and best-effort delete
+        // any uploaded files from the backend to avoid data retention.
+        if (!conference && previousConference) {
+            const state = getState();
+            const { fileSharing } = state['features/base/config'];
+            const { files } = state['features/file-sharing'];
+            const sessionId = previousConference.getMeetingUniqueId?.();
+
+            if (sessionId && fileSharing?.apiUrl && files.size) {
+                previousConference.getShortTermCredentials?.(previousConference.getFileSharing?.()?.getIdentityType?.())
+                    .then((token: string) => {
+                        for (const fileId of files.keys()) {
+                            fetch(`${fileSharing.apiUrl}/sessions/${sessionId}/files/${fileId}`, {
+                                method: 'DELETE',
+                                headers: token ? { 'Authorization': `Bearer ${token}` } : undefined
+                            }).catch(() => undefined);
+                        }
+                    })
+                    .catch(() => undefined);
+            }
+
+            for (const fileId of files.keys()) {
+                dispatch({
+                    type: _FILE_REMOVED,
+                    fileId
+                });
+            }
+        }
+
         if (conference && !previousConference) {
             conference.on(JitsiConferenceEvents.FILE_SHARING_FILE_ADDED, (file: IFileMetadata) => {
                 const state = getState();

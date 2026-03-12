@@ -34,6 +34,7 @@ import { RECORDING_OFF_SOUND_ID, RECORDING_ON_SOUND_ID } from '../../recording/c
 import { iAmVisitor } from '../../visitors/functions';
 import { APP_WILL_MOUNT, APP_WILL_UNMOUNT } from '../app/actionTypes';
 import { CONFERENCE_JOINED, CONFERENCE_WILL_JOIN } from '../conference/actionTypes';
+import { leaveConference } from '../conference/actions.any';
 import { forEachConference, getCurrentConference } from '../conference/functions';
 import { IJitsiConference } from '../conference/reducer';
 import { SET_CONFIG } from '../config/actionTypes';
@@ -65,6 +66,7 @@ import {
     localParticipantIdChanged,
     localParticipantJoined,
     localParticipantLeft,
+    kickParticipant,
     overwriteParticipantName,
     participantLeft,
     participantUpdated,
@@ -97,6 +99,9 @@ import { PARTICIPANT_JOINED_FILE, PARTICIPANT_LEFT_FILE } from './sounds';
 import { IJitsiParticipant } from './types';
 
 import './subscriber';
+
+const CONSULTATION_LONELY_TIMEOUT_MS = 5 * 60 * 1000;
+let _consultationLonelyTimeout: ReturnType<typeof setTimeout> | undefined;
 
 /**
  * Middleware that captures CONFERENCE_JOINED and CONFERENCE_LEFT actions and
@@ -309,6 +314,24 @@ MiddlewareRegistry.register(store => next => action => {
             && !isWhiteboardParticipant(action.participant)
         ) && _maybePlaySounds(store, action);
 
+        const state = store.getState();
+        const { consultationMode } = state['features/base/config'];
+
+        // Enforce a strict 1:1 meeting policy (local + 1 remote participant).
+        // This is a client-side safety net; server-side enforcement can be added separately.
+        if (consultationMode
+                && !action.participant.local
+                && !isScreenShareParticipant(action.participant)
+                && !isWhiteboardParticipant(action.participant)
+                && getParticipantCount(state) > 2) {
+            store.dispatch(showNotification({
+                title: 'Participant limit',
+                description: 'This consultation supports only two participants.'
+            }, NOTIFICATION_TIMEOUT_TYPE.MEDIUM));
+
+            store.dispatch(kickParticipant(action.participant.id));
+        }
+
         return _participantJoinedOrUpdated(store, next, action);
     }
 
@@ -474,6 +497,48 @@ StateListenerRegistry.register(
         dispatchLocalParticipantIdChanged
             && dispatch(
                 localParticipantIdChanged(LOCAL_PARTICIPANT_DEFAULT_ID));
+    });
+
+StateListenerRegistry.register(
+    state => ({
+        consultationMode: state['features/base/config']?.consultationMode,
+        conference: state['features/base/conference']?.conference,
+        participantCount: getParticipantCount(state)
+    }),
+    ({ consultationMode, conference, participantCount }, { dispatch, getState }, previous) => {
+        const wasConference = Boolean(previous?.conference);
+        const isConference = Boolean(conference);
+
+        // Clear any pending timeout on leave / mode off / participants joined.
+        if (!consultationMode || !isConference || participantCount > 1) {
+            if (_consultationLonelyTimeout) {
+                clearTimeout(_consultationLonelyTimeout);
+                _consultationLonelyTimeout = undefined;
+            }
+            return;
+        }
+
+        // Start the timer when joining a conference in consultation mode and still alone.
+        if (consultationMode && isConference && participantCount === 1 && !_consultationLonelyTimeout) {
+            _consultationLonelyTimeout = setTimeout(() => {
+                const state = getState();
+                const stillInConference = Boolean(state['features/base/conference']?.conference);
+
+                if (stillInConference && getParticipantCount(state) === 1) {
+                    dispatch(showNotification({
+                        title: 'Session ended',
+                        description: 'No other participant joined. The consultation has ended.'
+                    }, NOTIFICATION_TIMEOUT_TYPE.MEDIUM));
+                    dispatch(leaveConference());
+                }
+            }, CONSULTATION_LONELY_TIMEOUT_MS);
+        }
+
+        // If we just left, ensure timer is cleared.
+        if (wasConference && !isConference && _consultationLonelyTimeout) {
+            clearTimeout(_consultationLonelyTimeout);
+            _consultationLonelyTimeout = undefined;
+        }
     });
 
 /**

@@ -37,12 +37,9 @@ interface IProps {
  *
  * @returns {React$Element<any>}
  */
-function ChatHeader({ className, isCCTabEnabled, isPollsEnabled }: IProps) {
+function ChatHeader({ className }: IProps) {
     const dispatch = useDispatch();
     const { t } = useTranslation();
-    const _isChatDisabled = useSelector(isChatDisabled);
-    const focusedTab = useSelector(getFocusedTab);
-    const fileSharingTabEnabled = useSelector(isFileSharingEnabled);
 
     const onCancel = useCallback(() => {
         dispatch(toggleChat());
@@ -55,30 +52,13 @@ function ChatHeader({ className, isCCTabEnabled, isPollsEnabled }: IProps) {
         }
     }, []);
 
-    let title = 'chat.title';
-
-    if (!_isChatDisabled && focusedTab === ChatTabs.CHAT) {
-        title = 'chat.tabs.chat';
-    } else if (isPollsEnabled && focusedTab === ChatTabs.POLLS) {
-        title = 'chat.tabs.polls';
-    } else if (isCCTabEnabled && focusedTab === ChatTabs.CLOSED_CAPTIONS) {
-        title = 'chat.tabs.closedCaptions';
-    } else if (fileSharingTabEnabled && focusedTab === ChatTabs.FILE_SHARING) {
-        title = 'chat.tabs.fileSharing';
-    } else {
-        // If the focused tab is not enabled, don't render the header.
-        // This should not happen in normal circumstances since Chat.tsx already checks
-        // if any tabs are available before rendering.
-        return null;
-    }
-
     return (
         <div
             className = { className || 'chat-dialog-header' }>
             <span
                 aria-level = { 1 }
                 role = 'heading'>
-                { t(title) }
+                Live-Chat
             </span>
             <Icon
                 ariaLabel = { t('toolbar.closeChat') }

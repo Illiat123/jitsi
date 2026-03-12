@@ -142,10 +142,7 @@ const Prejoin: React.FC<IPrejoinProps> = ({ navigation }: IPrejoinProps) => {
     };
 
     useLayoutEffect(() => {
-        navigation.setOptions({
-            headerLeft,
-            headerTitle: t('prejoin.joinMeeting')
-        });
+        navigation.setOptions({ headerShown: false });
     }, [ navigation ]);
 
     let contentContainerStyles = styles.contentContainer;
@@ -161,55 +158,33 @@ const Prejoin: React.FC<IPrejoinProps> = ({ navigation }: IPrejoinProps) => {
         <JitsiScreen
             addBottomPadding = { false }
             safeAreaInsets = { [ 'right' ] }
-            style = { styles.contentWrapper }>
-            <BrandingImageBackground />
-            {
-                isFocused
-                && <View style = { largeVideoContainerStyles as StyleProp<ViewStyle> }>
-                    <View style = { styles.conferenceInfo as StyleProp<ViewStyle> }>
-                        {roomNameEnabled && (
-                            <View style = { styles.displayRoomNameBackdrop as StyleProp<TextStyle> }>
-                                <Text
-                                    numberOfLines = { 1 }
-                                    style = { styles.preJoinRoomName as StyleProp<TextStyle> }>
-                                    { roomName }
-                                </Text>
-                            </View>
-                        )}
+            style = { styles.consultationWrapper as ViewStyle }>
+            <View style = { styles.consultationTopBar as ViewStyle }>
+                <Text style = { styles.consultationTitle as TextStyle }>
+                    Video-Beratung (ready)
+                </Text>
+            </View>
+
+            <View style = { styles.consultationCenter as ViewStyle }>
+                {isFocused && (
+                    <View style = { styles.consultationPreview as ViewStyle }>
+                        <LargeVideo />
                     </View>
-                    <LargeVideo />
-                </View>
-            }
-            <View style = { contentContainerStyles as ViewStyle }>
+                )}
+                <Text style = { styles.consultationInstruction as TextStyle }>
+                    Sie sind bereit, der Konferenz beizutreten. Falls Sie wünschen, können Sie sich mit Hilfe der unterliegenden Schaltflächen stummschalten und / oder Ihre Kamera deaktivieren.
+                </Text>
+            </View>
+
+            <View style = { styles.consultationBottom as ViewStyle }>
                 <View style = { styles.toolboxContainer as ViewStyle }>
-                    <AudioMuteButton
-                        styles = { styles.buttonStylesBorderless } />
-                    <VideoMuteButton
-                        styles = { styles.buttonStylesBorderless } />
-                    {
-                        (knocking ? showHangUpLobby : showHangUpPrejoin)
-                        && <HangupButton
-                            styles = { styles.buttonStylesBorderless } />
-                    }
+                    <AudioMuteButton styles = { styles.buttonStylesBorderless } />
+                    <VideoMuteButton styles = { styles.buttonStylesBorderless } />
+                    {(knocking ? showHangUpLobby : showHangUpPrejoin) && (
+                        <HangupButton styles = { styles.buttonStylesBorderless } />
+                    )}
                 </View>
-                {
-                    showDisplayNameInput && <Input
-                        customStyles = {{ input: styles.customInput }}
-                        disabled = { isDisplayNameReadonly }
-                        error = { showDisplayNameError }
-                        onChange = { onChangeDisplayName }
-                        placeholder = { t('dialog.enterDisplayName') }
-                        value = { displayName } />
-                }
-                {
-                    showDisplayNameError && (
-                        <View style = { styles.errorContainer as StyleProp<ViewStyle> }>
-                            <Text style = { styles.error as StyleProp<TextStyle> }>
-                                { t('prejoin.errorMissingName') }
-                            </Text>
-                        </View>
-                    )
-                }
+
                 <Button
                     accessibilityLabel = 'prejoin.joinMeeting'
                     disabled = { showDisplayNameError }
@@ -217,13 +192,6 @@ const Prejoin: React.FC<IPrejoinProps> = ({ navigation }: IPrejoinProps) => {
                     onClick = { maybeJoin }
                     style = { styles.joinButton }
                     type = { PRIMARY } />
-                <Button
-                    accessibilityLabel = 'prejoin.joinMeetingInLowBandwidthMode'
-                    disabled = { showDisplayNameError }
-                    labelKey = 'prejoin.joinMeetingInLowBandwidthMode'
-                    onClick = { onJoinLowBandwidth }
-                    style = { styles.joinButton }
-                    type = { TERTIARY } />
             </View>
         </JitsiScreen>
     );

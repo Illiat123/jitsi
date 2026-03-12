@@ -129,7 +129,7 @@ var interfaceConfig = {
 
     SHOW_JITSI_WATERMARK: true,
     SHOW_POWERED_BY: false,
-    SHOW_PROMOTIONAL_CLOSE_PAGE: false,
+    SHOW_PROMOTIONAL_CLOSE_PAGE: true,
 
     /*
      * If indicated some of the error dialogs may point to the support URL for

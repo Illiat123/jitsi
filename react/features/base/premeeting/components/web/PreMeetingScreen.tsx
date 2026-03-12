@@ -153,9 +153,9 @@ const useStyles = makeStyles()(theme => {
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
-            width: '20%',
-            maxWidth: '50vw',
-            maxHeight: '25vh',
+            width: 'min(900px, 92vw)',
+            maxWidth: '92vw',
+            maxHeight: '60vh',
             boxSizing: 'border-box',
             marginBottom: '30px',
             borderRadius: '8px',
@@ -224,13 +224,26 @@ const useStyles = makeStyles()(theme => {
             alignItems: 'center',
             padding: '20px 30px',
             backgroundColor: 'rgba(0, 0, 0, 0.3)',
-            gap: '20px'
+            gap: '16px'
         },
         joinButtonContainer: {
             display: 'flex',
             justifyContent: 'center',
             flex: '0 1 auto',
             minWidth: 'auto'
+        },
+        footerRow: {
+            display: 'grid',
+            gridTemplateColumns: '1fr auto 1fr',
+            alignItems: 'center',
+            width: '100%',
+            maxWidth: '1200px',
+            gap: '15px',
+
+            '@media (max-width: 700px)': {
+                gridTemplateColumns: '1fr',
+                justifyItems: 'center',
+            }
         }
     };
 });
@@ -275,7 +288,7 @@ const PreMeetingScreen = ({
         <div className = { clsx('premeeting-screen', classes.container, className) }>
             <div className = { classes.header }>
                 <h1 className = { classes.title }>
-                    {title && title}
+                    Video-Beratung (ready)
                 </h1>
             </div>
             
@@ -291,7 +304,14 @@ const PreMeetingScreen = ({
             </div>
 
             <div className = { classes.footer }>
-                <div style = {{ display: 'flex', flexDirection: 'row', gap: '15px', alignItems: 'center', justifyContent: 'center', width: '100%', flexWrap: 'wrap' }}>
+                <div className = { classes.footerRow }>
+                    <div className = { classes.contentControls }>
+                        {_isPreCallTestEnabled && <ConnectionStatus />}
+                        {_buttons.length && <Toolbox toolbarButtons = { _buttons } />}
+                        {showRecordingWarning && <RecordingWarning />}
+                        {showUnsafeRoomWarning && <UnsafeRoomWarning />}
+                    </div>
+
                     <div className = { classes.joinButtonContainer }>
                         <ActionButton
                             onClick = { joinConference }
@@ -300,12 +320,8 @@ const PreMeetingScreen = ({
                             Beitreten
                         </ActionButton>
                     </div>
-                    <div className = { classes.contentControls }>
-                        {_isPreCallTestEnabled && <ConnectionStatus />}
-                        {_buttons.length && <Toolbox toolbarButtons = { _buttons } />}
-                        {showRecordingWarning && <RecordingWarning />}
-                        {showUnsafeRoomWarning && <UnsafeRoomWarning />}
-                    </div>
+
+                    <div />
                 </div>
             </div>
         </div>
