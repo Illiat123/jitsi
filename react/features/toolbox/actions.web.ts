@@ -28,6 +28,8 @@ export function dockToolbox(dock: boolean) {
     return (dispatch: IStore['dispatch'], getState: IStore['getState']) => {
         const state = getState();
         const { visible } = state['features/toolbox'];
+        const { toolbarConfig } = state['features/base/config'];
+        const alwaysVisible = toolbarConfig?.alwaysVisible;
         const toolbarTimeout = getToolbarTimeout(state);
 
         if (dock) {
@@ -36,10 +38,13 @@ export function dockToolbox(dock: boolean) {
 
             dispatch(clearToolboxTimeout());
         } else if (visible) {
-            dispatch(
-                setToolboxTimeout(
-                    () => dispatch(hideToolbox()),
-                    toolbarTimeout));
+            // Don't set timeout to hide if the toolbar is configured to always be visible
+            if (!alwaysVisible) {
+                dispatch(
+                    setToolboxTimeout(
+                        () => dispatch(hideToolbox()),
+                        toolbarTimeout));
+            }
         } else {
             dispatch(showToolbox());
         }

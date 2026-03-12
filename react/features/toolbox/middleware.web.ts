@@ -101,16 +101,16 @@ MiddlewareRegistry.register(store => next => action => {
 
     case SET_TOOLBOX_VISIBLE: {
         // Prevent hiding the toolbox when alwaysVisible is configured.
-        // When alwaysVisible is true and we're trying to hide it (visible=false),
-        // just skip the action completely by returning state as-is.
+        // When alwaysVisible is true and attempting to hide (visible=false),
+        // block the action from reaching the reducer.
         const state = store.getState();
         const alwaysVisible = state['features/base/config']?.toolbarConfig?.alwaysVisible;
         
         if (alwaysVisible && !action.visible) {
-            // Don't dispatch the hide action - return current state unchanged
-            return state;
+            // Block the action - don't call next() to prevent it from reaching the reducer
+            return;
         }
-        // Allow show actions or non-alwaysVisible scenarios to proceed normally
+        // Allow the action to proceed normally
         return next(action);
     }
 
@@ -123,7 +123,8 @@ MiddlewareRegistry.register(store => next => action => {
         // If alwaysVisible is true and toolbar is currently visible,
         // block the toggle-off action
         if (alwaysVisible && currentVisible) {
-            return state;
+            // Block the action - don't call next() to prevent it from reaching the reducer
+            return;
         }
         // Allow the action to proceed normally
         return next(action);
