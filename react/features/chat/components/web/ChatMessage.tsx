@@ -206,6 +206,15 @@ const useStyles = makeStyles()((theme: Theme) => {
     };
 });
 
+const INBAND_FILE_PREFIX = '__INBAND_FILE__:';
+
+interface IInBandFilePayload {
+    name: string;
+    size: number;
+    type: string;
+    dataUrl: string;
+}
+
 const ChatMessage = ({
     className = '',
     message,
@@ -235,6 +244,44 @@ const ChatMessage = ({
     const handleReactionsClose = useCallback(() => {
         setIsReactionsOpen(false);
     }, []);
+
+    const inBandFile = useMemo(() => {
+        if (!message.message || !message.message.startsWith(INBAND_FILE_PREFIX)) {
+            return undefined;
+        }
+
+        const raw = message.message.substring(INBAND_FILE_PREFIX.length);
+
+        try {
+            const parsed = JSON.parse(raw) as IInBandFilePayload;
+
+            if (!parsed || !parsed.name || !parsed.dataUrl) {
+                return undefined;
+            }
+
+            return parsed;
+        } catch {
+            return undefined;
+        }
+    }, [ message.message ]);
+
+    const handleInBandDownload = useCallback(() => {
+        if (!inBandFile) {
+            return;
+        }
+
+        try {
+            const link = document.createElement('a');
+
+            link.href = inBandFile.dataUrl;
+            link.download = inBandFile.name;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        } catch {
+            // Ignore download errors.
+        }
+    }, [ inBandFile ]);
 
     /**
      * Renders the display name of the sender.
@@ -380,7 +427,16 @@ const ChatMessage = ({
                         <div className = { cx('messagecontent', classes.messageContent) }>
                             {showDisplayName && _renderDisplayName()}
                             <div className = { cx('usermessage', classes.userMessage) }>
-                                {isFileMessage(message) ? (
+                                {inBandFile ? (
+                                    <div>
+                                        <button
+                                            className = 'inband-file-download'
+                                            onClick = { handleInBandDownload }
+                                            type = 'button'>
+                                            {t('fileSharing.downloadFile')} – {inBandFile.name}
+                                        </button>
+                                    </div>
+                                ) : isFileMessage(message) ? (
                                     <FileMessage
                                         message = { message }
                                         screenReaderHelpText = { message.messageType === MESSAGE_TYPE_LOCAL

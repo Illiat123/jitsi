@@ -7,7 +7,7 @@ import { withStyles } from 'tss-react/mui';
 import { IReduxState, IStore } from '../../../app/types';
 import { isMobileBrowser } from '../../../base/environment/utils';
 import { translate } from '../../../base/i18n/functions';
-import { IconFaceSmile, IconSend } from '../../../base/icons/svg';
+import { IconCloudUpload, IconFaceSmile, IconSend } from '../../../base/icons/svg';
 import Button from '../../../base/ui/components/web/Button';
 import Input from '../../../base/ui/components/web/Input';
 import { CHAT_SIZE } from '../../constants';
@@ -82,6 +82,16 @@ interface IProps extends WithTranslation {
      * Callback to invoke on message send.
      */
     onSend: Function;
+
+    /**
+     * Indicates whether file upload is enabled for the local participant.
+     */
+    _isFileUploadEnabled?: boolean;
+
+    /**
+     * Optional callback invoked when files are selected for upload.
+     */
+    onAttachFiles?: (files: FileList) => void;
 }
 
 /**
@@ -107,6 +117,7 @@ interface IState {
  */
 class ChatInput extends Component<IProps, IState> {
     _textArea?: RefObject<HTMLTextAreaElement>;
+    _fileInput?: RefObject<HTMLInputElement>;
 
     override state = {
         message: '',
@@ -123,6 +134,7 @@ class ChatInput extends Component<IProps, IState> {
         super(props);
 
         this._textArea = React.createRef<HTMLTextAreaElement>();
+        this._fileInput = React.createRef<HTMLInputElement>();
 
         // Bind event handlers so they are only bound once for every instance.
         this._onDetectSubmit = this._onDetectSubmit.bind(this);
@@ -130,6 +142,8 @@ class ChatInput extends Component<IProps, IState> {
         this._onSmileySelect = this._onSmileySelect.bind(this);
         this._onSubmitMessage = this._onSubmitMessage.bind(this);
         this._toggleSmileysPanel = this._toggleSmileysPanel.bind(this);
+        this._onAttachClick = this._onAttachClick.bind(this);
+        this._onFileSelected = this._onFileSelected.bind(this);
     }
 
     /**
@@ -200,6 +214,18 @@ class ChatInput extends Component<IProps, IState> {
                         ref = { this._textArea }
                         textarea = { true }
                         value = { this.state.message } />
+                    <input
+                        multiple = { true }
+                        onChange = { this._onFileSelected }
+                        ref = { this._fileInput }
+                        style = {{ display: 'none' }}
+                        type = 'file' />
+                    <Button
+                        accessibilityLabel = { this.props.t('fileSharing.uploadFile') }
+                        disabled = { !this.props._isFileUploadEnabled }
+                        icon = { IconCloudUpload }
+                        onClick = { this._onAttachClick }
+                        size = { isMobileBrowser() ? 'large' : 'medium' } />
                     <Button
                         accessibilityLabel = { this.props.t('chat.sendButton') }
                         disabled = { !this.state.message.trim() }
@@ -219,6 +245,39 @@ class ChatInput extends Component<IProps, IState> {
      */
     _focus() {
         this._textArea?.current && this._textArea.current.focus();
+    }
+
+    /**
+     * Handles clicking on the attach button to open the file picker.
+     *
+     * @private
+     * @returns {void}
+     */
+    _onAttachClick() {
+        if (!this.props._isFileUploadEnabled) {
+            return;
+        }
+
+        this._fileInput?.current?.click();
+    }
+
+    /**
+     * Handles file selection from the hidden input and forwards files to the parent.
+     *
+     * @param {React.ChangeEvent<HTMLInputElement>} event - The change event.
+     * @private
+     * @returns {void}
+     */
+    _onFileSelected(event: React.ChangeEvent<HTMLInputElement>) {
+        const { onAttachFiles } = this.props;
+        const files = event.target.files;
+
+        if (onAttachFiles && files && files.length > 0) {
+            onAttachFiles(files);
+        }
+
+        // Reset the input value so the same file can be selected again.
+        event.target.value = '';
     }
 
     /**

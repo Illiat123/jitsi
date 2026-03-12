@@ -1,9 +1,9 @@
 import { throttle } from 'lodash-es';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { connect, useSelector } from 'react-redux';
+import { connect, useSelector, useStore } from 'react-redux';
 import { makeStyles } from 'tss-react/mui';
 
-import { IReduxState } from '../../../app/types';
+import { IReduxState, IStore } from '../../../app/types';
 import { isTouchDevice, shouldEnableResize } from '../../../base/environment/utils';
 import { translate } from '../../../base/i18n/functions';
 import { IconInfo, IconMessage, IconShareDoc, IconSubtitles } from '../../../base/icons/svg';
@@ -12,7 +12,7 @@ import Select from '../../../base/ui/components/web/Select';
 import Tabs from '../../../base/ui/components/web/Tabs';
 import { arePollsDisabled } from '../../../conference/functions.any';
 import FileSharing from '../../../file-sharing/components/web/FileSharing';
-import { isFileSharingEnabled } from '../../../file-sharing/functions.any';
+import { isFileSharingEnabled, isFileUploadingEnabled, processFiles } from '../../../file-sharing/functions.any';
 import PollsPane from '../../../polls/components/web/PollsPane';
 import { isCCTabEnabled } from '../../../subtitles/functions.any';
 import {
@@ -253,6 +253,8 @@ const useStyles = makeStyles<{
     };
 });
 
+const INBAND_MAX_FILE_SIZE_BYTES = 512 * 1024; // 512 KB limit for in-band transfer
+
 const Chat = ({
     _isModal,
     _isOpen,
@@ -281,6 +283,9 @@ const Chat = ({
     const isTouch = isTouchDevice();
     const resizeEnabled = shouldEnableResize();
     const { classes, cx } = useStyles({ _isResizing, width: _width, isTouch, resizeEnabled });
+    const store = useStore<IStore>();
+    const isFileUploadEnabled = useSelector(isFileUploadingEnabled);
+    const isFileSharingFeatureEnabled = useSelector(isFileSharingEnabled);
     const [ isMouseDown, setIsMouseDown ] = useState(false);
     const [ mousePosition, setMousePosition ] = useState<number | null>(null);
     const [ dragChatWidth, setDragChatWidth ] = useState<number | null>(null);
@@ -465,6 +470,52 @@ const Chat = ({
      * @private
      * @returns {ReactElement}
      */
+    const onAttachFiles = useCallback((files: FileList) => {
+        if (!files || files.length === 0) {
+            return;
+        }
+
+        // Prefer full file-sharing pipeline when available.
+        if (isFileSharingFeatureEnabled && isFileUploadEnabled) {
+            processFiles(files, store);
+
+            return;
+        }
+
+        // Fallback: in-band file transfer over chat messages (no backend changes).
+        Array.from(files).forEach(file => {
+            if (file.size > INBAND_MAX_FILE_SIZE_BYTES) {
+                // For now, ignore files that are too large for in-band transfer.
+                return;
+            }
+
+            const reader = new FileReader();
+
+            reader.onload = () => {
+                try {
+                    const dataUrl = typeof reader.result === 'string' ? reader.result : '';
+
+                    if (!dataUrl) {
+                        return;
+                    }
+
+                    const payload = {
+                        name: file.name,
+                        size: file.size,
+                        type: file.type,
+                        dataUrl
+                    };
+
+                    dispatch(sendMessage(`__INBAND_FILE__:${JSON.stringify(payload)}`));
+                } catch {
+                    // Swallow errors to avoid breaking chat on malformed data.
+                }
+            };
+
+            reader.readAsDataURL(file);
+        });
+    }, [ dispatch, isFileSharingFeatureEnabled, isFileUploadEnabled, store ]);
+
     function renderChat() {
         return (
             <>
@@ -472,7 +523,10 @@ const Chat = ({
                     className = { cx(classes.chatPanelNoTabs, classes.resizableChat) }>
                     <MessageContainer
                         messages = { _messages } />
-                    <ChatInput onSend = { onSendMessage } />
+                    <ChatInput
+                        _isFileUploadEnabled = { isFileUploadEnabled }
+                        onAttachFiles = { onAttachFiles }
+                        onSend = { onSendMessage } />
                 </div>) }
             </>
         );
