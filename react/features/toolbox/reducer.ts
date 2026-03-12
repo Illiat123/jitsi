@@ -199,7 +199,8 @@ ReducerRegistry.register<IToolboxState>(
             };
 
         case SET_TOOLBOX_VISIBLE:
-            return set(state, 'visible', action.visible);
+            // HARDCODED: Always keep toolbar visible, ignore action.visible
+            return set(state, 'visible', true);
 
         case SET_PARTICIPANT_MENU_BUTTONS_WITH_NOTIFY_CLICK:
             return {
@@ -208,7 +209,8 @@ ReducerRegistry.register<IToolboxState>(
             };
 
         case TOGGLE_TOOLBOX_VISIBLE:
-            return set(state, 'visible', !state.visible);
+            // HARDCODED: Always keep toolbar visible, ignore toggle
+            return set(state, 'visible', true);
         }
 
         return state;

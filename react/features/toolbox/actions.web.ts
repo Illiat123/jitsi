@@ -28,24 +28,14 @@ export function dockToolbox(dock: boolean) {
     return (dispatch: IStore['dispatch'], getState: IStore['getState']) => {
         const state = getState();
         const { visible } = state['features/toolbox'];
-        const { toolbarConfig } = state['features/base/config'];
-        const alwaysVisible = toolbarConfig?.alwaysVisible;
-        const toolbarTimeout = getToolbarTimeout(state);
 
         if (dock) {
             // First make sure the toolbox is shown.
             visible || dispatch(showToolbox());
 
             dispatch(clearToolboxTimeout());
-        } else if (visible) {
-            // Don't set timeout to hide if the toolbar is configured to always be visible
-            if (!alwaysVisible) {
-                dispatch(
-                    setToolboxTimeout(
-                        () => dispatch(hideToolbox()),
-                        toolbarTimeout));
-            }
         } else {
+            // HARDCODED: Always show toolbox, never set timeout to hide
             dispatch(showToolbox());
         }
     };
@@ -77,36 +67,9 @@ export function fullScreenChanged(fullScreen: boolean) {
  */
 export function hideToolbox(force = false) {
     return (dispatch: IStore['dispatch'], getState: IStore['getState']) => {
-        const state = getState();
-        const { toolbarConfig } = state['features/base/config'];
-        const alwaysVisible = toolbarConfig?.alwaysVisible;
-        const autoHideWhileChatIsOpen = toolbarConfig?.autoHideWhileChatIsOpen;
-        const { hovered } = state['features/toolbox'];
-        const toolbarTimeout = getToolbarTimeout(state);
-
-        if (alwaysVisible) {
-            return;
-        }
-
-        dispatch(clearToolboxTimeout());
-
-        const hoverSelector = isLayoutTileView(state)
-            ? '.remotevideomenu:hover'
-            : '.filmstrip:hover,.remotevideomenu:hover';
-        const hoveredElem = document.querySelector(hoverSelector);
-
-        if (!force
-                && (hovered
-                    || state['features/invite'].calleeInfoVisible
-                    || (state['features/chat'].isOpen && !autoHideWhileChatIsOpen)
-                    || hoveredElem)) {
-            dispatch(
-                setToolboxTimeout(
-                    () => dispatch(hideToolbox()),
-                    toolbarTimeout));
-        } else {
-            dispatch(setToolboxVisible(false));
-        }
+        // HARDCODED: Completely disabled - toolbar will never hide
+        // Toolbar should always be visible for consultation mode
+        return;
     };
 }
 
